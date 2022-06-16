@@ -31,3 +31,19 @@ export function getSliders() {
         url: '/api/slider/getSliders',
     })
 }
+
+// 查询最新课程
+export function newCourse(data) {
+    return request({
+        url: '/api/course/mostNew',
+        method: 'post',
+        data
+    })
+}
+
+// 获取网站配置
+export function setting() {
+    return request({
+        url: '/api/setting/get',
+    })
+}
