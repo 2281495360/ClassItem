@@ -6,8 +6,8 @@
       </h1>
       <div class="content-nav">
         <ul>
-          <li>首 页</li>
-          <li>课 程</li>
+          <li><router-link to="/">首 页</router-link></li>
+          <li><router-link to="/course">课 程</router-link></li>
           <li>会 员</li>
         </ul>
       </div>
@@ -38,6 +38,8 @@ header {
   height: 100%;
   background: #fff;
   box-shadow: 0px 5px 6px rgba(0, 0, 0, 0.16);
+  z-index: 10;
+  position: relative;
 }
 .header-content {
   display: flex;
@@ -68,6 +70,12 @@ header {
   font-size: 18px;
   color: #808080;
   cursor: pointer;
+}
+.content-nav ul li a {
+  font-size: 18px;
+  color: #808080;
+  cursor: pointer;
+  text-decoration: none;
 }
 .search-buy-login {
   display: flex;

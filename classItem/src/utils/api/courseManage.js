@@ -7,6 +7,14 @@ export function getFirstCategorys() {
     })
 }
 
+// 获取二级分类
+export function getSecondCategorys(params) {
+    return request({
+        url: '/api/course/category/getSecondCategorys',
+        params
+    })
+}
+
 // 查询课程标签
 export function tagsList(data) {
     return request({
