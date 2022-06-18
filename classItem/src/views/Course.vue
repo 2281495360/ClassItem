@@ -13,7 +13,7 @@
               v-for="item in firstCategorys"
               :key="item.id"
               :class="
-                currentId['fcategory'].id == item.id
+                currentType['fcategory'].id == item.id
                   ? 'category-poniter'
                   : 'category-poniter-item'
               "
@@ -35,7 +35,7 @@
               v-for="item in secondCategorys"
               :key="item.id"
               :class="
-                currentId['scategory'].id == item.id
+                currentType['scategory'].id == item.id
                   ? 'category-poniter'
                   : 'category-poniter-item'
               "
@@ -57,7 +57,7 @@
               v-for="item in courseLevel"
               :key="item.id"
               :class="
-                currentId['clevel'].id == item.code
+                currentType['clevel'].id == item.code
                   ? 'category-poniter'
                   : 'category-poniter-item'
               "
@@ -74,23 +74,50 @@
     <div class="main-container">
       <div class="container-top">
         <ul class="all">
-          <li class="item">综合</li>
+          <li
+            class="item"
+            @click="handleZonghe"
+            :style="priceSortBy == '1' ? 'color:#2C80FF' : ''"
+          >
+            综合
+          </li>
           <li class="item split">|</li>
-          <li class="item">最新课程</li>
+          <li
+            class="item"
+            @click="handleNewCourse"
+            :style="priceSortBy == '2' ? 'color:#2C80FF' : ''"
+          >
+            最新课程
+          </li>
           <li class="item split">|</li>
-          <li class="item">最多购买</li>
+          <li
+            class="item"
+            @click="mostbuy"
+            :style="priceSortBy == '3' ? 'color:#2C80FF' : ''"
+          >
+            最多购买
+          </li>
           <li class="item split">|</li>
-          <li class="item-price">
-            <span>价格</span>
+          <li class="item-price" @click="handlePrice">
+            <span
+              :style="
+                priceSortBy == '4' || priceSortBy == '5' ? 'color:#2C80FF' : ''
+              "
+              >价格</span
+            >
             <span class="arrow">
-              <i class="el-icon-caret-top"></i>
-              <i class="el-icon-caret-bottom"></i>
+              <el-icon :style="priceSortBy == '4' ? 'color:#2C80FF' : ''"
+                ><caret-top
+              /></el-icon>
+              <el-icon :style="priceSortBy == '5' ? 'color:#2C80FF' : ''"
+                ><caret-bottom
+              /></el-icon>
             </span>
           </li>
         </ul>
         <ul class="right">
           <li class="right-item">
-            <el-radio-group>
+            <el-radio-group v-model="radio">
               <el-radio label="1">免费课程</el-radio>
               <el-radio label="2">会员课程</el-radio>
             </el-radio-group>
@@ -101,32 +128,34 @@
         <div class="newCourseContent">
           <ul class="courseUl">
             <li class="courseItem" v-for="item in courseList" :key="item.id">
-              <div class="courseInfo">
-                <div class="courseBg">
-                  <img :src="item.courseCover" />
-                </div>
-                <div class="courseName">{{ item.courseName }}</div>
-                <div class="courseDegree">
-                  {{ courseTypeFn(item.courseLevel) }} ·
-                  {{ item.purchaseCounter + item.purchaseCnt }}人报名
-                </div>
-
-                <div class="coursePriceZero" v-if="item.discountPrice == 0">
-                  <div class="pricefree">免费学习</div>
-                  <img src="../assets/img/free.png" alt="" />
-                </div>
-
-                <div class="coursePrice" v-else-if="item.isMember == 1">
-                  <div class="courseMemberbg">
-                    <span class="courseMember">会员免费</span>
+              <router-link :to="{ path: '/course-info/' + item.id }">
+                <div class="courseInfo">
+                  <div class="courseBg">
+                    <img :src="item.courseCover" />
                   </div>
-                  <div class="price">¥ {{ item.discountPrice }}</div>
-                </div>
+                  <div class="courseName">{{ item.courseName }}</div>
+                  <div class="courseDegree">
+                    {{ courseTypeFn(item.courseLevel) }} ·
+                    {{ item.purchaseCounter + item.purchaseCnt }}人报名
+                  </div>
 
-                <div class="coursePricePri" v-else>
-                  <div class="pricePri">¥ {{ item.discountPrice }}</div>
+                  <div class="coursePriceZero" v-if="item.discountPrice == 0">
+                    <div class="pricefree">免费学习</div>
+                    <img src="../assets/img/free.png" alt="" />
+                  </div>
+
+                  <div class="coursePrice" v-else-if="item.isMember == 1">
+                    <div class="courseMemberbg">
+                      <span class="courseMember">会员免费</span>
+                    </div>
+                    <div class="price">¥ {{ item.discountPrice }}</div>
+                  </div>
+
+                  <div class="coursePricePri" v-else>
+                    <div class="pricePri">¥ {{ item.discountPrice }}</div>
+                  </div>
                 </div>
-              </div>
+              </router-link>
             </li>
           </ul>
         </div>
@@ -146,11 +175,7 @@
 
 
 <script setup>
-let currentId = reactive({
-  fcategory: { id: "" },
-  scategory: { id: "" },
-  clevel: { id: "" },
-});
+import { CaretTop, CaretBottom } from "@element-plus/icons-vue";
 //mixin
 import mixin from "../mixins/courseType.js";
 let { courseTypeFn } = mixin();
@@ -167,17 +192,15 @@ import {
 let firstCategorys = ref([]);
 //获取二级分类的数据
 let secondCategorys = ref([]);
-let category = reactive({
+let secondCategorysParams = reactive({
   categoryId: -1,
 });
-
 //请求二级分类
-const getSecondCategorysFn = (category) => {
-  getSecondCategorys(category).then((res) => {
+const getSecondCategorysFn = (params) => {
+  getSecondCategorys(params).then((res) => {
     secondCategorys.value = res.data.list;
   });
 };
-
 //课程难度的数据
 let courseLevel = ref([
   { text: "初级", code: "1" },
@@ -195,6 +218,9 @@ let queryCoursePrams = reactive({
     firstCategory: "",
     secondCategory: "",
     courseLevel: "",
+    isFree: "",
+    isMember: "",
+    sortBy: "",
   },
 });
 const querySearchCourse = () => {
@@ -203,6 +229,10 @@ const querySearchCourse = () => {
     total.value = res.data.pageInfo.total;
   });
 };
+//免费课程 和 会员课程的数据
+let radio = ref("");
+//控制价格 升降序
+let priceSortBy = ref("1");
 //生命周期
 onBeforeMount(() => {
   //请求一级分类
@@ -210,7 +240,7 @@ onBeforeMount(() => {
     firstCategorys.value = res.data.list;
   });
   //请求二级分类
-  getSecondCategorysFn(category);
+  getSecondCategorysFn(secondCategorysParams);
   //查询所有课程
   querySearchCourse();
 });
@@ -223,35 +253,100 @@ const handleCurrentChange = (val) => {
   querySearchCourse();
 };
 
-//点击分类
+//点击课程方向、分类、难度 对应切换class
+let currentType = reactive({
+  fcategory: { id: "" },
+  scategory: { id: "" },
+  clevel: { id: "" },
+});
+//点击课程方向、分类、难度
 const buildingCondition = (type, id) => {
-  if (type === "fcategory") {
-    currentId["scategory"].id = "";
-    currentId["clevel"].id = "";
-    currentId[type].id = id;
-    queryCoursePrams.entity.courseLevel = "";
+  //课程方向
+  if (type == "fcategory") {
+    //免费课程和会员课程 之前数据清空
+    queryCoursePrams.entity.isMember = "";
+    queryCoursePrams.entity.isFree = "";
+    radio.value = "0";
+    //切换class
+    currentType[type].id = id;
+    currentType["scategory"].id = "";
+    currentType["clevel"].id = "";
+    //更新二级分类
     queryCoursePrams.entity.secondCategory = "";
+    queryCoursePrams.entity.courseLevel = "";
+    secondCategorysParams.categoryId = id;
+    getSecondCategorysFn(secondCategorysParams);
+    //更新课程数据
     queryCoursePrams.entity.firstCategory = id;
-    category.categoryId = id;
-    getSecondCategorysFn(category);
     querySearchCourse();
     return;
   }
-  if (type === "scategory") {
-    currentId["clevel"].id = "";
-    currentId[type].id = id;
+  //课程分类
+  if (type == "scategory") {
+    //免费课程和会员课程 之前数据清空
+    queryCoursePrams.entity.isMember = "";
+    queryCoursePrams.entity.isFree = "";
+    radio.value = "0";
+    //切换class
+    currentType[type].id = id;
+    currentType["clevel"].id = "";
+    //更新课程数据
     queryCoursePrams.entity.courseLevel = "";
     queryCoursePrams.entity.secondCategory = id;
     querySearchCourse();
     return;
   }
-  if (type === "clevel") {
-    currentId[type].id = id;
+  //课程难度
+  if (type == "clevel") {
+    //切换class
+    currentType[type].id = id;
     queryCoursePrams.entity.courseLevel = id;
-    //查询所有课程
     querySearchCourse();
     return;
   }
+};
+
+//免费课程 和 会员课程  切换
+watch(radio, (newVal, oldVal) => {
+  //选中的免费课程
+  if (newVal == "1") {
+    queryCoursePrams.entity.isMember = "";
+    queryCoursePrams.entity.isFree = "1";
+  } else if (newVal == "2") {
+    //会员课程
+    queryCoursePrams.entity.isFree = "";
+    queryCoursePrams.entity.isMember = "1";
+  }
+  querySearchCourse();
+});
+//综合
+const handleZonghe = () => {
+  priceSortBy.value = "1";
+  queryCoursePrams.entity.sortBy = "";
+  querySearchCourse();
+};
+//最新课程
+const handleNewCourse = () => {
+  priceSortBy.value = "2";
+  queryCoursePrams.entity.sortBy = "time-desc";
+  querySearchCourse();
+};
+//最多购买
+const mostbuy = () => {
+  priceSortBy.value = "3";
+  queryCoursePrams.entity.sortBy = "purchase-desc";
+  querySearchCourse();
+};
+//价格
+const handlePrice = () => {
+  if (priceSortBy.value == "4" || priceSortBy.value != "5") {
+    priceSortBy.value = "5";
+    queryCoursePrams.entity.sortBy = "price-desc";
+  } else if (priceSortBy.value == "5") {
+    priceSortBy.value = "4";
+    queryCoursePrams.entity.sortBy = "price-asc";
+  }
+  querySearchCourse();
 };
 </script>
 
@@ -452,6 +547,10 @@ const buildingCondition = (type, id) => {
   height: 280px;
   margin: 0 20px 20px 0;
   transition: margin-top 0.2s;
+}
+
+.courseItem a {
+  text-decoration: none;
 }
 .courseItem:hover {
   margin-top: -10px;
